@@ -1,0 +1,641 @@
+function FindProxyForURL(url, host) {
+	
+	// ***VARIABLE DECLARATIONS***
+	var privateIP = /^(0|10|127|192.168|172.1[6-9]|172.2[0-9]|172.3[01]|169.254)\.[0-9.]+$/;
+	var internalPublicIP =  /^(159.222.5[23456789]|198.36.101|198.36.96|192.88.99).[0-9.]+$/;
+	var resolved_ip = dnsResolve(host);
+	var TestFQDN = "sts.yfai.com";
+	var IPofFQDN = "180.166.112.46";
+	var ResultIP = dnsResolve(TestFQDN);
+	var country = "${COUNTRY}";
+
+	// If TestFQDN resolves to IPofFQDN, the user is external, else internal
+	if (ResultIP == IPofFQDN) 
+		return "DIRECT";
+
+	// Don't send non-FQDN or private IP or internal public IP auths to Zscaler
+	if (isPlainHostName(host) || privateIP.test(resolved_ip) || privateIP.test(host) || internalPublicIP.test(resolved_ip)|| internalPublicIP.test(host)) {
+		return "DIRECT";
+	}
+	
+	// FTP goes directly
+    if (url.substring(0,4) == "ftp:")
+        return "DIRECT";
+
+	// Send oversea applications' domain names to Zscaler HK nodes for China users
+	if (country == "China") {
+		if
+			// Miscellaneous
+			(shExpMatch(host, "*.cisco.com")
+			|| shExpMatch(host, "*.verizon.com")
+			|| shExpMatch(host, "*.verizonenterprise.com")
+			|| shExpMatch(host, "hcyn.login.em2.oraclecloud.com")
+			|| shExpMatch(host, "hcyn.fs.em2.oraclecloud.com")
+			|| shExpMatch(host, "hcyn.fa.em2.oraclecloud.com")
+			|| shExpMatch(host, "*.em2.oraclecloud.com")
+			|| shExpMatch(host, "*.bmwgroup.net")        //BMW Skype meeting
+			|| shExpMatch(host, "admin.zscalertwo.net")       //Zscaler admin portal
+			|| shExpMatch(host, "ips.zscalertwo.net")       //Zscaler firewall rule portal
+			|| shExpMatch(host, "github.com")       //Github
+			|| shExpMatch(host, "*.github.com")       //Github
+			|| shExpMatch(host, "*.githubusercontent.com")       //Github user content
+			// O365 Exhcange
+			|| shExpMatch(host, "outlook.office.com")
+			|| shExpMatch(host, "outlook.office365.com")
+			|| shExpMatch(host, "smtp.office365.com")
+			|| shExpMatch(host, "r1.res.office365.com")
+			|| shExpMatch(host, "r3.res.office365.com")
+			|| shExpMatch(host, "r4.res.office365.com")
+			|| shExpMatch(host, "*.outlook.office.com")
+			|| shExpMatch(host, "*.outlook.com")
+			|| shExpMatch(host, "attachments.office.net")
+			|| shExpMatch(host, "*.protection.outlook.com")
+			|| shExpMatch(host, "*.mail.protection.outlook.com")
+			// O365 Skype and Teams
+			|| shExpMatch(host, "*.lync.com")
+			|| shExpMatch(host, "*.teams.microsoft.com")
+			|| shExpMatch(host, "teams.microsoft.com")
+			|| shExpMatch(host, "*.broadcast.skype.com")
+			|| shExpMatch(host, "broadcast.skype.com")
+			|| shExpMatch(host, "quicktips.skypeforbusiness.com")
+			|| shExpMatch(host, "*.sfbassets.com")
+			|| shExpMatch(host, "*.urlp.sfbassets.com")
+			|| shExpMatch(host, "skypemaprdsitus.trafficmanager.net")
+			|| shExpMatch(host, "*.keydelivery.mediaservices.windows.net")
+			|| shExpMatch(host, "*.msecnd.net")
+			|| shExpMatch(host, "*.streaming.mediaservices.windows.net")
+			|| shExpMatch(host, "ajax.aspnetcdn.com")
+			|| shExpMatch(host, "mlccdn.blob.core.windows.net")
+			|| shExpMatch(host, "aka.ms")
+			|| shExpMatch(host, "amp.azure.net")
+			|| shExpMatch(host, "*.users.storage.live.com")
+			|| shExpMatch(host, "*.adl.windows.com")
+			|| shExpMatch(host, "*.skypeforbusiness.com")
+			|| shExpMatch(host, "*.msedge.net")
+			|| shExpMatch(host, "compass-ssl.microsoft.com")
+			|| shExpMatch(host, "*.mstea.ms")
+			|| shExpMatch(host, "*.secure.skypeassets.com")
+			|| shExpMatch(host, "mlccdnprod.azureedge.net")
+			|| shExpMatch(host, "videoplayercdn.osi.office.net")
+			|| shExpMatch(host, "*.tenor.com")
+			|| shExpMatch(host, "*.skype.com")
+			|| shExpMatch(host, "statics.teams.microsoft.com")
+			// O365 Sharepoint
+			|| shExpMatch(host, "*.sharepoint.com")
+			|| shExpMatch(host, "*.log.optimizely.com")
+			|| shExpMatch(host, "click.email.microsoftonline.com")
+			|| shExpMatch(host, "ssw.live.com")
+			|| shExpMatch(host, "storage.live.com")
+			|| shExpMatch(host, "*.search.production.apac.trafficmanager.net")
+			|| shExpMatch(host, "*.search.production.emea.trafficmanager.net")
+			|| shExpMatch(host, "*.search.production.us.trafficmanager.net")
+			|| shExpMatch(host, "*.wns.windows.com")
+			|| shExpMatch(host, "admin.onedrive.com")
+			|| shExpMatch(host, "officeclient.microsoft.com")
+			|| shExpMatch(host, "g.live.com")
+			|| shExpMatch(host, "oneclient.sfx.ms")
+			|| shExpMatch(host, "*.sharepointonline.com")
+			|| shExpMatch(host, "cdn.sharepointonline.com")
+			|| shExpMatch(host, "privatecdn.sharepointonline.com")
+			|| shExpMatch(host, "publiccdn.sharepointonline.com")
+			|| shExpMatch(host, "spoprod-a.akamaihd.net")
+			|| shExpMatch(host, "static.sharepointonline.com")
+			|| shExpMatch(host, "prod.msocdn.com")
+			|| shExpMatch(host, "watson.telemetry.microsoft.com")
+			|| shExpMatch(host, "*.svc.ms")
+			|| shExpMatch(host, "myyfai-files.sharepoint.com")
+			|| shExpMatch(host, "myyfai-myfiles.sharepoint.com")
+			// O365 Common
+			|| shExpMatch(host, "*.api.microsoftstream.com")
+			|| shExpMatch(host, "amsglob0cdnstream11.azureedge.net")
+			|| shExpMatch(host, "nps.onyx.azure.net")
+			|| shExpMatch(host, "*.azureedge.net")
+			|| shExpMatch(host, "*.online.office.com")
+			|| shExpMatch(host, "*.cdn.office.net")
+			|| shExpMatch(host, "*.onenote.com")
+			|| shExpMatch(host, "*.microsoft.com")
+			|| shExpMatch(host, "*cdn.onenote.net")
+			|| shExpMatch(host, "ad.atdmt.com")
+			|| shExpMatch(host, "ccs.login.microsoftonline.com")
+			|| shExpMatch(host, "*.msappproxy.net")
+			|| shExpMatch(host, "*.microsoftonline.com")
+			|| shExpMatch(host, "*.manage.office.com")
+			|| shExpMatch(host, "*.portal.cloudappsecurity.com")
+			|| shExpMatch(host, "apc.delve.office.com")
+			|| shExpMatch(host, "*.blob.core.windows.net")
+			|| shExpMatch(host, "*.helpshift.com")
+			|| shExpMatch(host, "*.aria.microsoft.com")
+			|| shExpMatch(host, "*.o365weve.com")
+			|| shExpMatch(host, "*.office365.com")
+			|| shExpMatch(host, "*.cloudapp.net")
+			|| shExpMatch(host, "*.aadrm.com")
+			|| shExpMatch(host, "testconnectivity.microsoft.com")
+			|| shExpMatch(host, "*.hockeyapp.net")
+			|| shExpMatch(host, "vortex.data.microsoft.com")
+			|| shExpMatch(host, "nexus.officeapps.live.com")
+			|| shExpMatch(host, "o15.officeredir.microsoft.com")
+			|| shExpMatch(host, "ocws.officeapps.live.com")
+			|| shExpMatch(host, "odc.officeapps.live.com")
+			|| shExpMatch(host, "roaming.officeapps.live.com")
+			|| shExpMatch(host, "activation.sls.microsoft.com")
+			|| shExpMatch(host, "crl.microsoft.com")
+			|| shExpMatch(host, "ols.officeapps.live.com")
+			|| shExpMatch(host, "office15client.microsoft.com")
+			|| shExpMatch(host, "ocsa.officeapps.live.com")
+			|| shExpMatch(host, "insertmedia.bing.office.net")
+			|| shExpMatch(host, "go.microsoft.com")
+			|| shExpMatch(host, "mrodevicemgr.officeapps.live.com")
+			|| shExpMatch(host, "officecdn.microsoft.com")
+			|| shExpMatch(host, "ajax.microsoft.com")
+			|| shExpMatch(host, "*.acompli.net")
+			|| shExpMatch(host, "*.manage.microsoft.com")
+			|| shExpMatch(host, "account.live.com")
+			|| shExpMatch(host, "accounts.google.com")
+			|| shExpMatch(host, "api.login.yahoo.com")
+			|| shExpMatch(host, "api.dropboxapi.com")
+			|| shExpMatch(host, "app.box.com")
+			|| shExpMatch(host, "graph.facebook.com")
+			|| shExpMatch(host, "www.evernote.com")
+			|| shExpMatch(host, "a.wunderlist.com")
+			|| shExpMatch(host, "bit.ly")
+			|| shExpMatch(host, "by.uservoice.com")
+			|| shExpMatch(host, "api.diagnostics.office.com")
+			|| shExpMatch(host, "data.flurry.com")
+			|| shExpMatch(host, "app.adjust.com")
+			|| shExpMatch(host, "rink.hockeyapp.net")
+			|| shExpMatch(host, "acompli.helpshift.com")
+			|| shExpMatch(host, "play.google.com")
+			|| shExpMatch(host, "*.appex.bing.com")
+			|| shExpMatch(host, "api.meetup.com")
+			|| shExpMatch(host, "*.yammer.com")
+			|| shExpMatch(host, "*.assets-yammer.com")
+			|| shExpMatch(host, "tasks.office.com")
+			|| shExpMatch(host, "www.outlook.com")
+			|| shExpMatch(host, "eus-www.sway-cdn.com")
+			|| shExpMatch(host, "www.google-analytics.com")
+			|| shExpMatch(host, "sway.com")
+			|| shExpMatch(host, "*.entrust.net")
+			|| shExpMatch(host, "officespeech.platform.bing.com")
+			|| shExpMatch(host, "*.loki.delve.office.com")
+			|| shExpMatch(host, "*.measure.office.com")
+			|| shExpMatch(host, "*.office.com")
+			|| shExpMatch(host, "cdnprod.myanalytics.microsoft.com")
+			|| shExpMatch(host, "workplaceanalytics.cdn.office.net")
+			|| shExpMatch(host, "r3.res.outlook.com")
+			|| shExpMatch(host, "*.notification.api.microsoftstream.com")
+			|| shExpMatch(host, "amsglob0cdnstream12.azureedge.net")
+			|| shExpMatch(host, "*.media.azure.net")
+			|| shExpMatch(host, "*broadcast.officeapps.live.com")
+			|| shExpMatch(host, "contentstorage.osi.office.net")
+			|| shExpMatch(host, "s.ytimg.com")
+			|| shExpMatch(host, "apis.live.net")
+			|| shExpMatch(host, "*.msftidentity.com")
+			|| shExpMatch(host, "*.microsoftonline-p.com")
+			|| shExpMatch(host, "*.protection.office.com")
+			|| shExpMatch(host, "account.office.net")
+			|| shExpMatch(host, "aus.delve.office.com")
+			|| shExpMatch(host, "*.localytics.com")
+			|| shExpMatch(host, "*.events.data.microsoft.com")
+			|| shExpMatch(host, "*.azurerms.com")
+			|| shExpMatch(host, "nexusrules.officeapps.live.com")
+			|| shExpMatch(host, "*.msocdn.com")
+			|| shExpMatch(host, "ocsredir.officeapps.live.com")
+			|| shExpMatch(host, "support.office.com")
+			|| shExpMatch(host, "cdn.odc.officeapps.live.com")
+			|| shExpMatch(host, "officecdn.microsoft.com.edgesuite.net")
+			|| shExpMatch(host, "c.bing.net")
+			|| shExpMatch(host, "*.outlookmobile.com")
+			|| shExpMatch(host, "api.office.com")
+			|| shExpMatch(host, "mail.google.com")
+			|| shExpMatch(host, "social.yahooapis.com")
+			|| shExpMatch(host, "www.dropbox.com")
+			|| shExpMatch(host, "m.facebook.com")
+			|| shExpMatch(host, "www.wunderlist.com")
+			|| shExpMatch(host, "www.acompli.com")
+			|| shExpMatch(host, "outlook.uservoice.com")
+			|| shExpMatch(host, "sdk.hockeyapp.net")
+			|| shExpMatch(host, "*.appex-rf.msn.com")
+			|| shExpMatch(host, "secure.meetup.com")
+			|| shExpMatch(host, "auth.gfx.ms")
+			|| shExpMatch(host, "*.yammerusercontent.com")
+			|| shExpMatch(host, "eus-www.sway-extensions.com")
+			|| shExpMatch(host, "sway.office.com")
+			|| shExpMatch(host, "*.geotrust.com")
+			|| shExpMatch(host, "*.officeconfig.msocdn.com")
+			|| shExpMatch(host, "loki.delve.office.com")
+			|| shExpMatch(host, "myanalytics.microsoft.com")
+			|| shExpMatch(host, "workplaceanalytics.office.com")
+			|| shExpMatch(host, "*excel.officeapps.live.com")
+			|| shExpMatch(host, "*.office.net")
+			|| shExpMatch(host, "www.youtube.com")
+			|| shExpMatch(host, "cdn.optimizely.com")
+			|| shExpMatch(host, "*.msidentity.com")
+			|| shExpMatch(host, "*.msauth.net")
+			|| shExpMatch(host, "manage.office.com")
+			|| shExpMatch(host, "admin.microsoft.com")
+			|| shExpMatch(host, "can.delve.office.com")
+			|| shExpMatch(host, "analytics.localytics.com")
+			|| shExpMatch(host, "appsforoffice.microsoft.com")
+			|| shExpMatch(host, "*.informationprotection.azure.com")
+			|| shExpMatch(host, "*.staffhub.office.com")
+			|| shExpMatch(host, "portal.microsoftonline.com")
+			|| shExpMatch(host, "officepreviewredir.microsoft.com")
+			|| shExpMatch(host, "excelbingmap.firstpartyapps.oaspapps.com")
+			|| shExpMatch(host, "www.googleapis.com")
+			|| shExpMatch(host, "*.itunes.apple.com")
+			|| shExpMatch(host, "c.bing.com")
+			|| shExpMatch(host, "wus-www.sway-cdn.com")
+			|| shExpMatch(host, "www.sway.com")
+			|| shExpMatch(host, "*.omniroot.com")
+			|| shExpMatch(host, "config.office.com")
+			|| shExpMatch(host, "loki.delve-gcc.office.com")
+			|| shExpMatch(host, "myanalytics-gcc.microsoft.com")
+			|| shExpMatch(host, "api.microsoftstream.com")
+			|| shExpMatch(host, "*onenote.officeapps.live.com")
+			|| shExpMatch(host, "officeapps.live.com")
+			|| shExpMatch(host, "account.activedirectory.windowsazure.com")
+			|| shExpMatch(host, "*.msauthimages.net")
+			|| shExpMatch(host, "protection.office.com")
+			|| shExpMatch(host, "home.office.com")
+			|| shExpMatch(host, "delve.office.com")
+			|| shExpMatch(host, "api.localytics.com")
+			|| shExpMatch(host, "assets.onestore.ms")
+			|| shExpMatch(host, "ecn.dev.virtualearth.net")
+			|| shExpMatch(host, "*.onmicrosoft.com")
+			|| shExpMatch(host, "officeredir.microsoft.com")
+			|| shExpMatch(host, "excelcs.officeapps.live.com")
+			|| shExpMatch(host, "login.windows-ppe.net")
+			|| shExpMatch(host, "login.live.com")
+			|| shExpMatch(host, "c.live.com")
+			|| shExpMatch(host, "wus-www.sway-extensions.com")
+			|| shExpMatch(host, "*.public-trust.com")
+			|| shExpMatch(host, "lpcres.delve.office.com")
+			|| shExpMatch(host, "az416426.vo.msecnd.net")
+			|| shExpMatch(host, "*powerpoint.officeapps.live.com")
+			|| shExpMatch(host, "www.onedrive.com")
+			|| shExpMatch(host, "accounts.accesscontrol.windows.net")
+			|| shExpMatch(host, "portal.office.com")
+			|| shExpMatch(host, "delve-gcc.office.com")
+			|| shExpMatch(host, "connect.facebook.net")
+			|| shExpMatch(host, "informationprotection.hosting.portal.azure.net")
+			|| shExpMatch(host, "cdn.forms.office.net")
+			|| shExpMatch(host, "r.office.microsoft.com")
+			|| shExpMatch(host, "ocos-office365-s2s.msedge.net")
+			|| shExpMatch(host, "secure.aadcdn.microsoftonline-p.com")
+			|| shExpMatch(host, "cl2.apple.com")
+			|| shExpMatch(host, "*.symcb.com")
+			|| shExpMatch(host, "s0.assets-yammer.com")
+			|| shExpMatch(host, "*rtc.officeapps.live.com")
+			|| shExpMatch(host, "adminwebservice.microsoftonline.com")
+			|| shExpMatch(host, "*.msftauth.net")
+			|| shExpMatch(host, "www.office.com")
+			|| shExpMatch(host, "eur.delve.office.com")
+			|| shExpMatch(host, "firstpartyapps.oaspapps.com")
+			|| shExpMatch(host, "az826701.vo.msecnd.net")
+			|| shExpMatch(host, "dc.applicationinsights.microsoft.com")
+			|| shExpMatch(host, "omextemplates.content.office.net")
+			|| shExpMatch(host, "client.hip.live.com")
+			|| shExpMatch(host, "*.symcd.com")
+			|| shExpMatch(host, "*shared.officeapps.live.com")
+			|| shExpMatch(host, "api.passwordreset.microsoftonline.com")
+			|| shExpMatch(host, "*.msftauthimages.net")
+			|| shExpMatch(host, "gbr.delve.office.com")
+			|| shExpMatch(host, "c1.microsoft.com")
+			|| shExpMatch(host, "dc.services.visualstudio.com")
+			|| shExpMatch(host, "peoplegraph.firstpartyapps.oaspapps.com")
+			|| shExpMatch(host, "directory.services.live.com")
+			|| shExpMatch(host, "*.verisign.com")
+			|| shExpMatch(host, "web.microsoftstream.com")
+			|| shExpMatch(host, "*view.officeapps.live.com")
+			|| shExpMatch(host, "autologon.microsoftazuread-sso.com")
+			|| shExpMatch(host, "*.phonefactor.net")
+			|| shExpMatch(host, "ind.delve.office.com")
+			|| shExpMatch(host, "prod.firstpartyapps.oaspapps.com.akadns.net")
+			|| shExpMatch(host, "forms.microsoft.com")
+			|| shExpMatch(host, "pptcs.officeapps.live.com")
+			|| shExpMatch(host, "d.docs.live.net")
+			|| shExpMatch(host, "docs.live.net")
+			|| shExpMatch(host, "*.verisign.net")
+			|| shExpMatch(host, "*visio.officeapps.live.com")
+			|| shExpMatch(host, "becws.microsoftonline.com")
+			|| shExpMatch(host, "enterpriseregistration.windows.net")
+			|| shExpMatch(host, "jpn.delve.office.com")
+			|| shExpMatch(host, "forms.office.com")
+			|| shExpMatch(host, "store.office.com")
+			|| shExpMatch(host, "en-us.appex-rf.msn.com")
+			|| shExpMatch(host, "aia.entrust.net")
+			|| shExpMatch(host, "*word-edit.officeapps.live.com")
+			|| shExpMatch(host, "clientconfig.microsoftonline-p.net")
+			|| shExpMatch(host, "management.azure.com")
+			|| shExpMatch(host, "kor.delve.office.com")
+			|| shExpMatch(host, "dgps.support.microsoft.com")
+			|| shExpMatch(host, "mem.gfx.ms")
+			|| shExpMatch(host, "templateservice.office.com")
+			|| shExpMatch(host, "foodanddrink.services.appex.bing.com")
+			|| shExpMatch(host, "apps.identrust.com")
+			|| shExpMatch(host, "*word-view.officeapps.live.com")
+			|| shExpMatch(host, "companymanager.microsoftonline.com")
+			|| shExpMatch(host, "policykeyservice.dc.ad.msft.net")
+			|| shExpMatch(host, "lam.delve.office.com")
+			|| shExpMatch(host, "telemetryservice.firstpartyapps.oaspapps.com")
+			|| shExpMatch(host, "docs.microsoft.com")
+			|| shExpMatch(host, "office365servicehealthcommunications.cloudapp.net")
+			|| shExpMatch(host, "tse1.mm.bing.net")
+			|| shExpMatch(host, "cacert.a.omniroot.com")
+			|| shExpMatch(host, "office.live.com")
+			|| shExpMatch(host, "device.login.microsoftonline.com")
+			|| shExpMatch(host, "nam.delve.office.com")
+			|| shExpMatch(host, "web.localytics.com")
+			|| shExpMatch(host, "msdn.microsoft.com")
+			|| shExpMatch(host, "securescore.office.com")
+			|| shExpMatch(host, "uci.officeapps.live.com")
+			|| shExpMatch(host, "cacert.omniroot.com")
+			|| shExpMatch(host, "graph.microsoft.com")
+			|| shExpMatch(host, "suite.office.net")
+			|| shExpMatch(host, "webanalytics.localytics.com")
+			|| shExpMatch(host, "platform.linkedin.com")
+			|| shExpMatch(host, "signup.microsoft.com")
+			|| shExpMatch(host, "watson.microsoft.com")
+			|| shExpMatch(host, "odcsm.officeapps.live.com")
+			|| shExpMatch(host, "office.microsoft.com")
+			|| shExpMatch(host, "cacerts.digicert.com")
+			|| shExpMatch(host, "graph.windows.net")
+			|| shExpMatch(host, "webshell.suite.office.com")
+			|| shExpMatch(host, "wus-firstpartyapps.oaspapps.com")
+			|| shExpMatch(host, "staffhub.ms")
+			|| shExpMatch(host, "wikipedia.firstpartyapps.oaspapps.com")
+			|| shExpMatch(host, "officeimg.vo.msecnd.net")
+			|| shExpMatch(host, "cdp1.public-trust.com")
+			|| shExpMatch(host, "login.microsoft.com")
+			|| shExpMatch(host, "products.office.com")
+			|| shExpMatch(host, "staffhub.office.com")
+			|| shExpMatch(host, "wordcs.officeapps.live.com")
+			|| shExpMatch(host, "p100-sandbox.itunes.apple.com")
+			|| shExpMatch(host, "cert.int-x3.letsencrypt.org")
+			|| shExpMatch(host, "login.microsoftonline.com")
+			|| shExpMatch(host, "staffhub.uservoice.com")
+			|| shExpMatch(host, "www.bing.com")
+			|| shExpMatch(host, "partnerservices.getmicrosoftkey.com")
+			|| shExpMatch(host, "crl.entrust.net")
+			|| shExpMatch(host, "login.microsoftonline-p.com")
+			|| shExpMatch(host, "staffhubweb.azureedge.net")
+			|| shExpMatch(host, "crl.globalsign.com")
+			|| shExpMatch(host, "login.windows.net")
+			|| shExpMatch(host, "res.delve.office.com")
+			|| shExpMatch(host, "sas.office.microsoft.com")
+			|| shExpMatch(host, "crl.globalsign.net")
+			|| shExpMatch(host, "logincert.microsoftonline.com")
+			|| shExpMatch(host, "shellprod.msocdn.com")
+			|| shExpMatch(host, "signup.live.com")
+			|| shExpMatch(host, "crl.identrust.com")
+			|| shExpMatch(host, "loginex.microsoftonline.com")
+			|| shExpMatch(host, "support.content.office.net")
+			|| shExpMatch(host, "view.atdmt.com")
+			|| shExpMatch(host, "login-us.microsoftonline.com")
+			|| shExpMatch(host, "support.microsoft.com")
+			|| shExpMatch(host, "crl3.digicert.com")
+			|| shExpMatch(host, "nexus.microsoftonline-p.com")
+			|| shExpMatch(host, "weather.tile.appex.bing.com")
+			|| shExpMatch(host, "crl4.digicert.com")
+			|| shExpMatch(host, "passwordreset.microsoftonline.com")
+			|| shExpMatch(host, "technet.microsoft.com")
+			|| shExpMatch(host, "evintl-aia.verisign.com")
+			|| shExpMatch(host, "provisioningapi.microsoftonline.com")
+			|| shExpMatch(host, "templates.office.com")
+			|| shExpMatch(host, "evintl-crl.verisign.com")
+			|| shExpMatch(host, "videocontent.osi.office.net")
+			|| shExpMatch(host, "evintl-ocsp.verisign.com")
+			|| shExpMatch(host, "evsecure-aia.verisign.com")
+			|| shExpMatch(host, "evsecure-crl.verisign.com")
+			|| shExpMatch(host, "evsecure-ocsp.verisign.com")
+			|| shExpMatch(host, "isrg.trustid.ocsp.identrust.com")
+			|| shExpMatch(host, "mscrl.microsoft.com")
+			|| shExpMatch(host, "ocsp.digicert.com")
+			|| shExpMatch(host, "ocsp.entrust.net")
+			|| shExpMatch(host, "ocsp.globalsign.com")
+			|| shExpMatch(host, "ocsp.int-x3.letsencrypt.org")
+			|| shExpMatch(host, "ocsp.msocsp.com")
+			|| shExpMatch(host, "ocsp.omniroot.com")
+			|| shExpMatch(host, "ocsp2.globalsign.com")
+			|| shExpMatch(host, "ocspx.digicert.com")
+			|| shExpMatch(host, "s1.symcb.com")
+			|| shExpMatch(host, "s2.symcb.com")
+			|| shExpMatch(host, "sa.symcb.com")
+			|| shExpMatch(host, "sd.symcb.com")
+			|| shExpMatch(host, "secure.globalsign.com")
+			|| shExpMatch(host, "sr.symcb.com")
+			|| shExpMatch(host, "sr.symcd.com")
+			|| shExpMatch(host, "su.symcb.com")
+			|| shExpMatch(host, "su.symcd.com")
+			|| shExpMatch(host, "vassg142.crl.omniroot.com")
+			|| shExpMatch(host, "vassg142.ocsp.omniroot.com")
+			|| shExpMatch(host, "www.digicert.com")
+			|| shExpMatch(host, "www.microsoft.com")) {
+		return "PROXY 10.196.58.10:10792; bjs1.sme.zscalertwo.net:10792; DIRECT";
+		}
+	}
+		
+    // For YFAS 878 and its downstream sites, send special FQDNs through Zscaler
+    if ((dnsDomainIs(host, "webdx.adient.com") ||
+        dnsDomainIs(host, "ag.adient.com") ||
+        dnsDomainIs(host, "agsm.adient.com") ||
+        dnsDomainIs(host, "agsm.ga.adient.com") ||
+        dnsDomainIs(host, "bpm.adient.com") ||
+        dnsDomainIs(host, "sts.ga.adient.com") ||
+        dnsDomainIs(host, "ecountjq.saic-gm.com"))
+		&&(isInNet(myIpAddress(),"10.96.0.0","255.255.240.0") ||
+		isInNet(myIpAddress(),"10.97.128.0","255.255.240.0") ||
+		isInNet(myIpAddress(),"10.97.144.0","255.255.240.0") ||
+		isInNet(myIpAddress(),"10.98.120.0","255.255.252.0") ||
+		isInNet(myIpAddress(),"10.98.128.0","255.255.248.0") ||
+		isInNet(myIpAddress(),"10.100.144.0","255.255.254.0") ||
+		isInNet(myIpAddress(),"10.108.148.0","255.255.254.0") ||
+		isInNet(myIpAddress(),"10.109.0.0","255.255.240.0") ||
+		isInNet(myIpAddress(),"10.109.192.0","255.255.224.0") ||
+		isInNet(myIpAddress(),"10.111.160.0","255.255.240.0") ||
+		isInNet(myIpAddress(),"10.124.48.0","255.255.240.0") ||
+		isInNet(myIpAddress(),"10.126.224.0","255.255.240.0") ||
+		isInNet(myIpAddress(),"10.127.48.0","255.255.240.0") ||
+		isInNet(myIpAddress(),"10.178.148.0","255.255.252.0") ||
+		isInNet(myIpAddress(),"10.178.155.0","255.255.255.0") ||
+		isInNet(myIpAddress(),"10.178.156.0","255.255.255.0") ||
+		isInNet(myIpAddress(),"10.178.157.0","255.255.255.0") ||
+		isInNet(myIpAddress(),"10.178.166.0","255.255.255.0") ||
+		isInNet(myIpAddress(),"10.178.176.0","255.255.240.0") ||
+		isInNet(myIpAddress(),"10.178.189.0","255.255.255.0")))
+	return "PROXY sha1.sme.zscalertwo.net:10792; bjs1.sme.zscalertwo.net:10792; DIRECT";
+
+    // Send these domains through proxy
+    if (dnsDomainIs(host, "www.yanfengco.com") ||
+		dnsDomainIs(host, "www.yanfeng.com") ||
+        dnsDomainIs(host, "sqwechat.yanfengco.com") ||
+        dnsDomainIs(host, "sqfiles.yanfengco.com") ||
+        dnsDomainIs(host, "sqadmin.yanfengco.com") ||
+        dnsDomainIs(host, "cn001.yfai.com") ||
+        dnsDomainIs(host, "brand-center.yfai.com") ||
+        dnsDomainIs(host, "www.yfai.com") ||
+        dnsDomainIs(host, "www.iaa2015.yfai.com") ||
+        dnsDomainIs(host, "www.iaa2015-training.yfai.com") ||
+        dnsDomainIs(host, "www.iaa2015-products.yfai.com") ||
+        dnsDomainIs(host, "iaa2015.yfai.com") ||
+        dnsDomainIs(host, "iaa2015-training.yfai.com") ||
+        dnsDomainIs(host, "iaa2015-products.yfai.com") ||
+        dnsDomainIs(host, "iaa2015-media.yfai.com") ||
+        dnsDomainIs(host, "www.iaa2015-media.yfai.com") ||
+        dnsDomainIs(host, "ex-proxy.yfai.com") ||
+        dnsDomainIs(host, "yfaiqyh.yfai.com") ||
+        dnsDomainIs(host, "yfaifile.yfai.com") ||
+        dnsDomainIs(host, "yfaiadmin.yfai.com") ||
+        dnsDomainIs(host, "yfcoexchange.yfai.com") ||
+        dnsDomainIs(host, "qvaryfgldb01.yfai.com") ||
+        dnsDomainIs(host, "qvaryfgldb02.yfai.com") ||
+        dnsDomainIs(host, "qvaryfgldb03.yfai.com") ||
+        dnsDomainIs(host, "vpnap.yfai.com") ||
+        dnsDomainIs(host, "vpnna.yfai.com") ||
+        dnsDomainIs(host, "vpnemea.yfai.com") ||
+        dnsDomainIs(host, "supply-sgm.yfai.com") ||
+        dnsDomainIs(host, "careers.yfai.com") ||
+        dnsDomainIs(host, "oftp2-yfai-cla.factoryworkx.com") ||
+		dnsDomainIs(host, "oftp2-yfai-exp.factoryworkx.com") ||
+		dnsDomainIs(host, "analyticsprod.yfai.com") ||
+		dnsDomainIs(host, "analyticsdev.yfai.com") ||
+		dnsDomainIs(host, "evdi-plm.yfai.com") ||
+		dnsDomainIs(host, "chinahelpline.yfai.com")) {
+		/* For Site 878 and its downstream sites to YFAS's on-premise proxy at Site 878 */
+		if (isInNet(myIpAddress(),"10.96.0.0","255.255.240.0") ||
+			isInNet(myIpAddress(),"10.97.128.0","255.255.240.0") ||
+			isInNet(myIpAddress(),"10.97.144.0","255.255.240.0") ||
+			isInNet(myIpAddress(),"10.98.120.0","255.255.252.0") ||
+			isInNet(myIpAddress(),"10.98.128.0","255.255.248.0") ||
+			isInNet(myIpAddress(),"10.100.144.0","255.255.254.0") ||
+			isInNet(myIpAddress(),"10.108.148.0","255.255.254.0") ||
+			isInNet(myIpAddress(),"10.109.0.0","255.255.240.0") ||
+			isInNet(myIpAddress(),"10.109.192.0","255.255.224.0") ||
+			isInNet(myIpAddress(),"10.111.160.0","255.255.240.0") ||
+			isInNet(myIpAddress(),"10.124.48.0","255.255.240.0") ||
+			isInNet(myIpAddress(),"10.126.224.0","255.255.240.0") ||
+			isInNet(myIpAddress(),"10.127.48.0","255.255.240.0") ||
+			isInNet(myIpAddress(),"10.178.148.0","255.255.252.0") ||
+			isInNet(myIpAddress(),"10.178.155.0","255.255.255.0") ||
+			isInNet(myIpAddress(),"10.178.156.0","255.255.255.0") ||
+			isInNet(myIpAddress(),"10.178.157.0","255.255.255.0") ||
+			isInNet(myIpAddress(),"10.178.166.0","255.255.255.0") ||
+			isInNet(myIpAddress(),"10.178.176.0","255.255.240.0") ||
+			isInNet(myIpAddress(),"10.178.189.0","255.255.255.0")) {
+			return "PROXY 172.27.116.50:8080; sha1.sme.zscalertwo.net:10792; DIRECT";
+		}
+		/* For other sites send to Zscaler nodes */
+		else if (country == "China") {
+			return "PROXY sha1.sme.zscalertwo.net:10792; bjs1.sme.zscalertwo.net:10792; DIRECT";
+		}
+		else {
+			return "PROXY ${GATEWAY_FX}:10792; PROXY ${SECONDARY_GATEWAY_FX}:10792; DIRECT";
+		}
+	}
+
+	// Send these domains DIRECT
+	if (dnsDomainIs(host, ".yfco.com") ||
+		dnsDomainIs(host, ".yanfengco.com") ||
+		dnsDomainIs(host, ".yfai.com") ||
+		dnsDomainIs(host, ".yf.sh.cn") ||
+		dnsDomainIs(host, ".saicomotor.com") ||
+		dnsDomainIs(host, ".saicportal.com") ||
+		dnsDomainIs(host, "imanweb1.eur.corp.gm.com") ||
+		dnsDomainIs(host, "tcss.eur.corp.gm.com") ||
+		dnsDomainIs(host, "db7072-scan.eur.corp.gm.com") ||
+		dnsDomainIs(host, "db70-vip.eur.corp.gm.com") ||
+		dnsDomainIs(host, "db71-vip.eur.corp.gm.com") ||
+		dnsDomainIs(host, "db72-vip.eur.corp.gm.com") ||
+		dnsDomainIs(host, "fmsvol1.eur.corp.gm.com") ||
+		dnsDomainIs(host, "fmsvol2.eur.corp.gm.com") ||
+		dnsDomainIs(host, "deruhtcavpias12.eur.corp.gm.com") ||
+		dnsDomainIs(host, "deruhtcavpias13.eur.corp.gm.com") ||
+		dnsDomainIs(host, "dbdr7071-scan.eur.corp.gm.com") ||
+		dnsDomainIs(host, "dbdr70-vip.eur.corp.gm.com") ||
+		dnsDomainIs(host, "dbdr71-vip.eur.corp.gm.com") ||
+		dnsDomainIs(host, "tc-pgcs.naeng.gm.com") ||
+		dnsDomainIs(host, "wrnpc034.edc.nam.gm.com") ||
+		dnsDomainIs(host, "mpgpc018.edc.nam.gm.com") ||
+		dnsDomainIs(host, "plm.adient.com") ||
+		dnsDomainIs(host, "ts-home.stnd.toyota.co.jp") ||
+		dnsDomainIs(host, "warpsi.toyota.co.jp") ||
+		dnsDomainIs(host, "www.u-diex.jp") ||
+		dnsDomainIs(host, "www.at.toyota.co.jp") ||
+		dnsDomainIs(host, "doc-atsp.kitora.toyota.co.jp") ||
+		dnsDomainIs(host, "tdl3.mx.toyota.co.jp") ||
+		dnsDomainIs(host, "impact.jnx.honda.co.jp") ||
+		dnsDomainIs(host, "www.jnx.amigo-edi.com") ||
+		dnsDomainIs(host, "yfmro.yf.sh.cn") ||
+		dnsDomainIs(host, "support.yfai-2320.com") ||
+		dnsDomainIs(host, ".jlrint.com") ||
+		dnsDomainIs(host, "oftp2-yfai-cla.factoryworkx.com") ||
+		dnsDomainIs(host, "oftp2-yfai-exp.factoryworkx.com") ||
+		dnsDomainIs(host, "yfai-connects.com") ||
+		dnsDomainIs(host, "vpn.yf-usa.com") ||
+		dnsDomainIs(host, "connect.kiefel.de") ||
+		dnsDomainIs(host, "tcss.naeng.gm.com") ||
+		dnsDomainIs(host, "secure7.telenium.net") ||
+        dnsDomainIs(host, "secure8.telenium.ca") ||
+        dnsDomainIs(host, "secure.telpay.ca") ||
+        dnsDomainIs(host, "secure.telenium.ca") ||
+        dnsDomainIs(host, "secure2.telenium.net") ||
+        dnsDomainIs(host, "secure.telenium.net") ||
+        dnsDomainIs(host, "v.magidglove.info") ||
+        dnsDomainIs(host, "7r7fe.x.incapdns.net") ||
+        isInNet(dnsResolve(host), "45.60.153.28",  "255.255.255.255") ||
+		isInNet(dnsResolve(host), "195.56.148.76",  "255.255.255.255") ||
+		isInNet(dnsResolve(host), "64.78.189.81",  "255.255.255.255") ||
+		isInNet(dnsResolve(host), "64.78.189.34",  "255.255.255.255") ||
+		isInNet(dnsResolve(host), "64.78.189.35",  "255.255.255.255") ||
+		isInNet(dnsResolve(host), "64.78.189.70",  "255.255.255.255") ||
+		isInNet(dnsResolve(host), "136.1.24.200",  "255.255.255.255") ||
+		isInNet(dnsResolve(host), "136.1.28.200",  "255.255.255.255") ||
+		isInNet(dnsResolve(host), "159.222.52.0",  "255.255.252.0") ||
+		isInNet(dnsResolve(host), "64.141.32.33",  "255.255.255.255") ||
+		isInNet(dnsResolve(host), "159.222.56.0",  "255.255.252.0"))
+	return "DIRECT";
+
+
+	// Updates are directly accessible
+	if (((localHostOrDomainIs(host, "trust.zscaler.com")) ||
+		(localHostOrDomainIs(host, "trust.zscaler.net")) ||
+		(localHostOrDomainIs(host, "trust.zscalerone.net")) ||
+		(localHostOrDomainIs(host, "trust.zscalertwo.net")) ||
+		(localHostOrDomainIs(host, "trust.zscloud.net")) ||
+		(localHostOrDomainIs(host, "pac.zscalertwo.net")) ) &&
+		(url.substring(0,5) == "http:" || url.substring(0,6) == "https:")){
+		return "DIRECT";
+	}
+
+	// Default Traffic Forwarding for Site 878 and its downstream sites to YFAS's on-premise proxy at Site 878
+	if (isInNet(myIpAddress(),"10.96.0.0","255.255.240.0") ||
+		isInNet(myIpAddress(),"10.97.128.0","255.255.240.0") ||
+		isInNet(myIpAddress(),"10.97.144.0","255.255.240.0") ||
+		isInNet(myIpAddress(),"10.98.120.0","255.255.252.0") ||
+		isInNet(myIpAddress(),"10.98.128.0","255.255.248.0") ||
+		isInNet(myIpAddress(),"10.100.144.0","255.255.254.0") ||
+		isInNet(myIpAddress(),"10.108.148.0","255.255.254.0") ||
+		isInNet(myIpAddress(),"10.109.0.0","255.255.240.0") ||
+		isInNet(myIpAddress(),"10.109.192.0","255.255.224.0") ||
+		isInNet(myIpAddress(),"10.111.160.0","255.255.240.0") ||
+		isInNet(myIpAddress(),"10.124.48.0","255.255.240.0") ||
+		isInNet(myIpAddress(),"10.126.224.0","255.255.240.0") ||
+		isInNet(myIpAddress(),"10.127.48.0","255.255.240.0") ||
+		isInNet(myIpAddress(),"10.178.148.0","255.255.252.0") ||
+		isInNet(myIpAddress(),"10.178.155.0","255.255.255.0") ||
+		isInNet(myIpAddress(),"10.178.156.0","255.255.255.0") ||
+		isInNet(myIpAddress(),"10.178.157.0","255.255.255.0") ||
+		isInNet(myIpAddress(),"10.178.166.0","255.255.255.0") ||
+		isInNet(myIpAddress(),"10.178.176.0","255.255.240.0") ||
+		isInNet(myIpAddress(),"10.178.189.0","255.255.255.0")){
+		return "PROXY 172.27.116.50:8080; sha1.sme.zscalertwo.net:10792; DIRECT";
+	}
+	
+	// Default Traffic Forwarding for China users. Forwarding to ZENs in China on Dedicated Port 10792
+	if (country == "China") {
+		return "PROXY sha1.sme.zscalertwo.net:10792; bjs1.sme.zscalertwo.net:10792; DIRECT";
+	}
+
+	// Default Traffic Forwarding for global users. Forwarding to Zen on Dedicated Port 10792
+    return "PROXY ${GATEWAY_FX}:10792; PROXY ${SECONDARY_GATEWAY_FX}:10792; DIRECT";
+}
