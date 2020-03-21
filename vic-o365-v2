@@ -2,8 +2,9 @@
  * vic-o365-v2.pac
  * @authors	Gao, Jiezhang (Vic)
  * @date	2020-03-07
- * @update	2020-03-09
+ * @update	2020-03-21
  * NOTE - This PAC script is hosted on GitHub. It does not check users' location like what Zscaler does on its Hosted PAC.
+ * Update logs - Add more sites to HK_FQDN, and make default traffic forwarding "DIRECT"
  */
 
 // Proxy function configuration (1: enabled | 0: disabled)
@@ -30,6 +31,11 @@ var HK_FQDN = [
 	{domain:'github.com'},       //Github
 	{domain:'*.github.com'},       //Github
 	{domain:'*.githubusercontent.com'},       //Github user content
+	{domain:'*.avaya.com'},       //Avaya sites
+	{domain:'*.zabbix.com'},       //Zabbix sites
+	{domain:'prometheus.io'},       //Prometheus sites
+	{domain:'elastic.co'},       //ELK sites
+	{domain:'*.elastic.co'},       //ELK sites
 	// O365 Exhcange
 	{domain:'outlook.office.com'},
 	{domain:'outlook.office365.com'},
@@ -656,6 +662,7 @@ function FindProxyForURL(url, host) {
 	}
 	
 	// Default traffic forwarding. Forwarding to the targeted proxy servers
-	return 'PROXY '+TargetProxy1+'; '+'PROXY '+TargetProxy2+'; '+'DIRECT';
+	// return 'PROXY '+TargetProxy1+'; '+'PROXY '+TargetProxy2+'; '+'DIRECT';
+	return 'DIRECT';
 	// ** PROXY FUNCTIONS END **
 }
